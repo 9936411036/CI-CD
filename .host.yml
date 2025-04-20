@@ -1,0 +1,22 @@
+kind: pipeline
+name: Change Hostname on Network Device
+type: docker
+
+steps:
+  - name: Change Hostname to randi
+    image: alpine:latest  # Minimal image to run SSH commands
+    environment:
+      SSH_USER: "vikas"  # The SSH username
+      SSH_PASS: "tapesh"  # The SSH password
+      DEVICE_IP: "192.168.1.14"  # The device IP address
+    commands:
+      # Install OpenSSH client for SSH connection
+      - apk add --no-cache openssh
+
+      # Create SSH command to connect to the device and change the hostname
+      - echo "$SSH_PASS" | sshpass ssh -o StrictHostKeyChecking=no -o HostkeyAlgorithms=ssh-rsa $SSH_USER@$DEVICE_IP "conf t; hostname randi; end; write memory"
+
+trigger:
+  branch:
+    include:
+      - main
