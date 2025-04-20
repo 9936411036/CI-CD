@@ -3,17 +3,16 @@ type: docker
 name: Testing Python CI/CD
 
 steps:
-  - name: Install and deploy
+  - name: Install dependencies and run script
     image: python:3.10
     environment:
       MY_PASS:
-        from_secret: MY_PASS  # Replace with your actual secret name if needed
+        from_secret: MY_PASS
     commands:
-      - ls -alh  # List files for debugging
-      - pip install -r requirements.txt  # Install dependencies from requirements.txt
-      - python bat.py  # Run your Python script (bat.py)
+      - pip install Flask==2.1.0 requests==2.27.1 pytest==7.2.0
+      - python bat.py
 
 trigger:
   branch:
     include:
-      - main  # Trigger pipeline on the 'main' branch
+      - main
