@@ -1,22 +1,27 @@
 kind: pipeline
-name: Change Hostname on Network Device
 type: docker
+name: configure-cisco-iosxe
 
 steps:
-  - name: Change Hostname to randi
-    image: alpine:latest  # Minimal image to run SSH commands
+  - name: configure-router
+    image: alpine:latest
     environment:
-      SSH_USER: "vikas"  # The SSH username
-      SSH_PASS: "tapesh"  # The SSH password
-      DEVICE_IP: "192.168.1.14"  # The device IP address
+      SSH_USER: tapesh
+      SSH_PASS:
+        from_secret: MY_PASS
+      DEVICE_IP: 192.168.1.6
     commands:
-      # Install OpenSSH client for SSH connection
-      - apk add --no-cache openssh
-
-      # Create SSH command to connect to the device and change the hostname
-      - echo "$SSH_PASS" | sshpass ssh -o StrictHostKeyChecking=no -o HostkeyAlgorithms=ssh-rsa $SSH_USER@$DEVICE_IP "conf t; hostname randi; end; write memory"
-
-trigger:
-  branch:
-    include:
-      - main
+      - apk add --no-cache openssh sshpass
+      - |
+        sshpass -p "$SSH_PASS" ssh -o StrictHostKeyChecking=no -o HostkeyAlgorithms=+ssh-rsa $SSH_USER@$DEVICE_IP <<EOF
+        enable
+        tapesh
+        conf t
+        hostname randi
+        router bgp 65001
+         bgp router-id 1.1.1.1
+         network 192.168.1.0 mask 255.255.255.0
+        end
+        write memory
+        exit
+        EOF
